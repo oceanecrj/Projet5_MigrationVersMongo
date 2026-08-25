@@ -68,7 +68,10 @@ _Note_: En cas de modification du script (étape 2), entrer la commande : `docke
 ### **<ins>Etape 5 : visualisation des logs</ins>**
 Pour les logs liés à la migration, entrer la commande : `docker compose logs migration`\
 Pour les logs liés à MongoDB, entrer la commande : `docker compose logs mongodb`
-### **<ins>Etape 6 : arrêt du conteneur</ins>**
+### **<ins>Etape 6 : connexion à MongoDB Compass</ins>**
+Pour visualiser la base de données sur l'application Mongo Compass, ajoutez une nouvelle connexion et copiez dans la partie URI `mongodb://localhost:27018` ensuite cliquez sur "Save & Connect".  
+Vous avez maintenant accès à la base de données et pouvez faire des requêtes directement depuis MongoDB.  
+### **<ins>Etape 7 : arrêt du conteneur</ins>**
 Entrer la commande : `docker compose down`
 \
 Pour supprimer également les volumes lors de l'arrêt : `docker compose down -v`
