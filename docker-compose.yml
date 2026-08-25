@@ -1,0 +1,43 @@
+services:
+
+  mongodb:
+    image: mongo:8.3.7
+
+    ports:
+      - "27018:27017"
+
+    volumes:
+      - mongo_data:/data/db
+
+
+  migration:
+    build: .
+
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      DATABASE_NAME: Healthcare
+      COLLECTION_NAME: Patients
+    
+      CSV_INPUT: /data/healthcare_dataset.csv
+      CSV_OUTPUT: /data/healthcare_clean.csv
+      CSV_DELIMITER: ","
+
+      APPLY_CHANGES: "true"
+      MAX_EXAMPLES: "10"
+      REQUIRE_EMPTY_COLLECTION: "true"
+
+    volumes:
+      - ./healthcare_dataset.csv:/input/healthcare_dataset.csv:ro
+      - csv_data:/data
+
+    command: >
+      sh -c "cp /input/healthcare_dataset.csv /data/healthcare_dataset.csv
+      && python healthcare_migration.py"
+
+    depends_on:
+      - mongodb
+
+
+volumes:
+  csv_data:
+  mongo_data:
