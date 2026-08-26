@@ -11,6 +11,8 @@ from pymongo import MongoClient
 CSV_INPUT = Path(os.environ["CSV_INPUT"])
 CSV_OUTPUT = Path(os.environ["CSV_OUTPUT"])
 CSV_DELIMITER = os.environ["CSV_DELIMITER"]
+CSV_DUPLICATES = Path(os.environ["CSV_DUPLICATES"])
+MONGODB_DUPLICATES = Path(os.environ["MONGODB_DUPLICATES"])
 
 MONGODB_URI = os.environ["MONGODB_URI"]
 DATABASE = os.environ["DATABASE_NAME"]
@@ -311,6 +313,18 @@ def audit_records(records, source):
 
     return audit
 
+#Fonction pour créer un fichier pour auditer les doublons supprimés
+def exporter_doublons(dataframe, chemin):
+    doublons = dataframe[dataframe.duplicated(subset=CHAMPS_ID, keep="first")]
+
+    if doublons.empty:
+        print("Aucun doublon à exporter.")
+        return
+
+    doublons.to_csv(chemin, sep=CSV_DELIMITER, encoding="utf-8-sig", index=False)
+
+    print(f"Fichier des doublons créé : {chemin}")
+    print(f"Doublons exportés         : {len(doublons)}")
 
 def print_anomalies(title, values):
     anomalies = {champ: count for champ, count in values.items() if count > 0}
@@ -393,7 +407,10 @@ def clean_records(audit):
         return []
 
     dataframe = pd.DataFrame(documents)
-
+    
+    #Creation d'un fichier pour les doublons avant suppression du dataframe
+    exporter_doublons(dataframe, CSV_DUPLICATES)
+    
     dataframe = dataframe.drop_duplicates(subset=CHAMPS_ID, keep="first")
 
     enregistrement_clean = []
@@ -445,6 +462,12 @@ def charger_mongodb(collectiondb):
             dataframe[champ] = pd.to_datetime(dataframe[champ], errors="coerce")
 
     doublons = dataframe.duplicated(subset=CHAMPS_ID, keep="first")
+    
+    #Creation d'un fichier csv si présence de doublons à la suite du chargement de données pour MongoDB
+    dataframe_doublons = dataframe.loc[doublons].copy()
+
+    if not dataframe_doublons.empty:
+        dataframe_doublons.to_csv(MONGODB_DUPLICATES, sep=CSV_DELIMITER, encoding="utf-8-sig", index=False)
 
     # Liste des id des doublons
     id_doublons = dataframe.loc[doublons,"_id"].tolist()
