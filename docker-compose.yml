@@ -21,7 +21,9 @@ services:
       CSV_INPUT: /data/healthcare_dataset.csv
       CSV_OUTPUT: /data/healthcare_clean.csv
       CSV_DELIMITER: ","
-
+      CSV_DUPLICATES: /data/doublons_csv.csv
+      MONGODB_DUPLICATES: /data/doublons_mongodb.csv
+      
       APPLY_CHANGES: "true"
       MAX_EXAMPLES: "10"
       REQUIRE_EMPTY_COLLECTION: "true"
