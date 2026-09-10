@@ -1,5 +1,5 @@
 # Script pour la migration de données médicales sur MongoDB.  
-Version : **1.1**
+Version : **2.0**
 
 ## Description courte : 
 Script à destination des clients pour migrer de données médicales depuis un fichier csv sur la base MongoDB.  
@@ -59,22 +59,35 @@ Pour permettre l'enregistrement de nouvelles données dans la base MongoDB exist
 1) Ouvrir le terminal de commande  
 2) Se positionner dans le dossier du script via la commande `cd "chemin"`
 3) Pour monter l'image python, entrer la commande : `docker compose build`
-### **<ins>Etape 4 : lancement du script</ins>**
+### **<ins>Etape 4 : lancement de MongoDB et création des utilisateurs</ins>**
 1) Pour lancer mongodb, entrer la commande :`docker compose up -d mongodb`
-2) Pour vérifier si mongodb est actif, entrer la commande : `docker compose ps
-3) Pour lancer le script, entrer la commande : `docker compose up migration`\
-_Note_: En cas de modification du script (étape 2), entrer la commande : `docker compose up --build migration`\
+2) Pour vérifier si mongodb est actif, entrer la commande : `docker compose ps`
+3) Pour la création des utilisateurs, il faut accéder à MongoDB via : `docker compose exec mongodb mongosh --username NOM_ADMIN --authenticationDatabase Healthcare --password`. Puis entrer votre mot de passe
+4) Afin de créer des utilisateurs pour la base de données "Healthcare":  
+   a) entrer `use Healthcare`,  
+   b) puis entrer  `db.createUser({user: "NOM_UTILISATEUR",  pwd: "MOT_DE_PASSE_UTILISATEUR",  roles: [{ role: "ROLE", db: "Healthcare" }]})`  
+   _Note_: Pour ROLE, vous pouvez choisir les rôles suivant : "dbOwner", "readWrite", "read". Ces rôles correspondent respectivement à administrateur de la base de données, utilisateur avec des droits de modifications de la collection, utilisateur avec des droits de lecture uniquement.
+5) Utiliser la fonction `db.getUsers()` pour vérifier les utilisateurs enregistrés
+### **<ins>Etape 5 : lancement du script</ins>**
+1) Pour lancer le script, entrer la commande : `docker compose run migration`\
+   Lors du lancement, il faudra renseigner le nom de l'utilisateur et le mot de passe.  
+_Note_: En cas de modification du script (étape 2), entrer la commande : `docker compose run --build migration`\  
 	Des volumes sont créés, la liste est accessible via la commande : `docker volume ls`
-### **<ins>Etape 5 : visualisation des logs</ins>**
+### **<ins>Etape 6 : visualisation des logs</ins>**
 Pour les logs liés à la migration, entrer la commande : `docker compose logs migration`\
 Pour les logs liés à MongoDB, entrer la commande : `docker compose logs mongodb`
-### **<ins>Etape 6 : connexion à MongoDB Compass</ins>**
-Pour visualiser la base de données sur l'application Mongo Compass, ajoutez une nouvelle connexion et copiez dans la partie URI `mongodb://localhost:27018` ensuite cliquez sur "Save & Connect".  
-Vous avez maintenant accès à la base de données et pouvez faire des requêtes directement depuis MongoDB.  
-### **<ins>Etape 7 : arrêt du conteneur</ins>**
+### **<ins>Etape 7 : connexion à MongoDB Compass</ins>**
+Pour visualiser la base de données sur l'application Mongo Compass :  
+1) ajoutez une nouvelle connexion et copiez dans la partie URI `mongodb://localhost:27018`
+2) cliquez sur "Advanced Connection Options" et entrez votre Username, votre Password et inserer "Healthcare" dans la case Authentication Database
+3) cliquez sur "Save & Connect".  
+Vous avez maintenant accès à la base de données et pouvez faire des requêtes directement depuis MongoDB Compass.  
+Selon vos droits, vous aurez uniquement la possibilité de visualiser la base de données ou également de la modifier.
+### **<ins>Etape 8 : arrêt du conteneur</ins>**
 Entrer la commande : `docker compose down`
 \
-Pour supprimer également les volumes lors de l'arrêt : `docker compose down -v`
+Pour supprimer également les volumes lors de l'arrêt : `docker compose down -v`  
+**ATTENTION**: en cas de suppression des volumes, toutes les données de MongoDB sont perdues (collection et utilisateurs).
 
 
 
