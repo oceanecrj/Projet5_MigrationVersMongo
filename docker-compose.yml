@@ -17,6 +17,7 @@ services:
       
     volumes:
       - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/01-create-users.js:ro
 
 
   migration:
@@ -36,7 +37,7 @@ services:
       
       APPLY_CHANGES: "true"
       MAX_EXAMPLES: "10"
-      REQUIRE_EMPTY_COLLECTION: "true"
+      REQUIRE_EMPTY_COLLECTION: "false"
 
     networks :
       - mongo_mig
