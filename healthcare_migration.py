@@ -15,6 +15,7 @@ CSV_DUPLICATES = Path(os.environ["CSV_DUPLICATES"])
 MONGODB_DUPLICATES = Path(os.environ["MONGODB_DUPLICATES"])
 
 MONGODB_URI = os.environ["MONGODB_URI"]
+MONGODB_AUTH_DB = os.environ["MONGODB_AUTH_DB"]
 DATABASE = os.environ["DATABASE_NAME"]
 COLLECTION = os.environ["COLLECTION_NAME"]
 
@@ -422,8 +423,16 @@ def clean_records(audit):
 
 # MONGODB
 
-def mongodb_connexion():
-    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=10000)
+def identification_mongodb():
+    print("\nIDENTIFICATION MONGODB")
+
+    utilisateur = input("Nom d'utilisateur : ").strip()
+    mdp = input("Mot de passe : ")
+
+    return utilisateur, mdp
+    
+def mongodb_connexion(utilisateur, mdp):
+    client = MongoClient(MONGODB_URI, username = utilisateur, password = mdp, authSource = MONGODB_AUTH_DB, serverSelectionTimeoutMS=10000)
     client.admin.command("ping")
     collectiondb = client[DATABASE][COLLECTION]
     return client, collectiondb
@@ -526,6 +535,9 @@ def comparaison_datasets(csv_records, mongo_records):
 # MAIN
 
 def main():
+    #Authentification utilisateur avant lancement du script
+    utilisateur, mdp = identification_mongodb()
+
     # PHASE 1 : contrôler le CSV.
     print("\nPHASE 1 - AUDIT CSV")
     csv_records = csv_charge(CSV_INPUT)
@@ -549,7 +561,7 @@ def main():
         print(f"CSV nettoyé                : {CSV_OUTPUT}")
         print(f"Doublons supprimés         : {csv_audit['doublons_nombre']}")
 
-        client, collection_db = mongodb_connexion()
+        client, collection_db = mongodb_connexion(utilisateur,mdp)
         try:
             nbre_doc_inseres = import_mongodb(collection_db, version_clean)
             print(f"Documents MongoDB insérés  : {nbre_doc_inseres}")
@@ -563,7 +575,7 @@ def main():
     # Cette phase est toujours exécutée, même si la phase 2 est désactivée.
     print("\nPHASE 3 - AUDIT MONGODB")
 
-    client, collection_db = mongodb_connexion()
+    client, collection_db = mongodb_connexion(utilisateur,mdp)
     try:
         mongo_records = charger_mongodb(collection_db)
         mongo_audit = audit_records(mongo_records, "MONGODB APRES MIGRATION")
