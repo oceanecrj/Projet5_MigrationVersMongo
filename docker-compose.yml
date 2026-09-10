@@ -2,19 +2,29 @@ services:
 
   mongodb:
     image: mongo:8.3.7
+    
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
 
+    command: ["mongod", "--auth"]
+      
     ports:
       - "27018:27017"
-
+    
+    networks :
+      - mongo_mig
+      
     volumes:
       - mongo_data:/data/db
 
 
   migration:
     build: .
-
+      
     environment:
       MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_AUTH_DB: Healthcare
       DATABASE_NAME: Healthcare
       COLLECTION_NAME: Patients
     
@@ -28,6 +38,9 @@ services:
       MAX_EXAMPLES: "10"
       REQUIRE_EMPTY_COLLECTION: "true"
 
+    networks :
+      - mongo_mig
+      
     volumes:
       - ./healthcare_dataset.csv:/input/healthcare_dataset.csv:ro
       - csv_data:/data
@@ -39,6 +52,9 @@ services:
     depends_on:
       - mongodb
 
+networks:
+  mongo_mig:
+    driver : bridge
 
 volumes:
   csv_data:
