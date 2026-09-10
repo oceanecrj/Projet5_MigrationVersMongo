@@ -62,7 +62,7 @@ Pour permettre l'enregistrement de nouvelles données dans la base MongoDB exist
 ### **<ins>Etape 4 : lancement de MongoDB et création des utilisateurs</ins>**
 1) Pour lancer mongodb, entrer la commande :`docker compose up -d mongodb`
 2) Pour vérifier si mongodb est actif, entrer la commande : `docker compose ps`
-3) Pour la création des utilisateurs, il faut accéder à MongoDB via : `docker compose exec mongodb mongosh --username NOM_ADMIN --authenticationDatabase Healthcare --password`. Puis entrer votre mot de passe
+3) Pour la création des utilisateurs, il faut accéder à MongoDB via : `docker compose exec mongodb mongosh --username NOM_ADMIN --authenticationDatabase admin --password`. Puis entrer votre mot de passe
 4) Afin de créer des utilisateurs pour la base de données "Healthcare":  
    a) entrer `use Healthcare`,  
    b) puis entrer  `db.createUser({user: "NOM_UTILISATEUR",  pwd: "MOT_DE_PASSE_UTILISATEUR",  roles: [{ role: "ROLE", db: "Healthcare" }]})`  
